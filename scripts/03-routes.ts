@@ -25,6 +25,12 @@ const MIN_LENGTH_M = 15000;
 const ACCESS_RADIUS_M = 1500;
 const NETWORK_WEIGHT: Record<string, number> = { iwn: 1, nwn: 0.9, rwn: 0.6, lwn: 0.3 };
 
+/** Chemins de pèlerinage : surtout en plaine et sur route, peu adaptés à l'itinérance en bivouac. */
+function isPilgrimage(tags: Record<string, string>): boolean {
+  return tags.pilgrimage === 'yes' || /compostelle|saint-jacques|st-jacques|francigena|via cluny|podiensis|gebennensis|camino|chemin de st/i.test(`${tags.name ?? ''} ${tags.ref ?? ''}`);
+}
+const PILGRIMAGE_FACTOR = 0.5;
+
 interface Candidate {
   rel: OsmElement;
   name: string;
@@ -64,6 +70,8 @@ async function yearlyPageviews(title: string): Promise<number> {
 
 function isVariant(tags: Record<string, string>): boolean {
   const s = `${tags.name ?? ''} ${tags.ref ?? ''} ${tags.state ?? ''}`.toLowerCase();
+  // Variantes, liaisons et relations qui ne décrivent qu'une étape d'un itinéraire plus long.
+  if (/(é|e)tape|stage|tronçon|section/.test(s)) return true;
   return /variante|liaison|raccourci|alternative|accès|acces|bretelle|proposed/.test(s) || /^gr ?\d+[a-z]$/i.test((tags.ref ?? '').trim()) && !tags.name;
 }
 
@@ -118,7 +126,8 @@ export async function buildMassifRoutes(m: Massif): Promise<void> {
     if (net < 0.3 || (net === 0.3 && !t.wikidata && !t.wikipedia)) continue;
     const diag = haversine([r.bounds.minlon, r.bounds.minlat], [r.bounds.maxlon, r.bounds.maxlat]);
     if (diag < 4000) continue;
-    cands.push({ rel: r, name: t.name && t.ref && !t.name.includes(t.ref) ? `${t.ref} – ${t.name}` : name, pre: net + (t.wikidata || t.wikipedia ? 0.3 : 0), pageviews: 0 });
+    const pre = (net + (t.wikidata || t.wikipedia ? 0.3 : 0)) * (isPilgrimage(t) ? PILGRIMAGE_FACTOR : 1);
+    cands.push({ rel: r, name: t.name && t.ref && !t.name.includes(t.ref) ? `${t.ref} – ${t.name}` : name, pre, pageviews: 0 });
   }
   cands.sort((a, b) => b.pre - a.pre);
   const short = cands.slice(0, 18);
@@ -143,7 +152,7 @@ export async function buildMassifRoutes(m: Massif): Promise<void> {
     const top3 = [...access].sort((a, b) => b.departuresPerDay - a.departuresPerDay).slice(0, 3);
     const accessRaw = Math.log1p(top3.reduce((s, a) => s + a.departuresPerDay, 0)) + 0.15 * Math.min(access.length, 10);
     const t = c.rel.tags ?? {};
-    const notorietyRaw = (NETWORK_WEIGHT[t.network ?? ''] ?? 0) + (c.wikiTitle ? 0.4 : 0) + Math.log10(1 + c.pageviews) / 5;
+    const notorietyRaw = ((NETWORK_WEIGHT[t.network ?? ''] ?? 0) + (c.wikiTitle ? 0.4 : 0) + Math.log10(1 + c.pageviews) / 5) * (isPilgrimage(t) ? PILGRIMAGE_FACTOR : 1);
     // Tracé complet de la relation dépassant l'emprise du massif ?
     const b = c.rel.bounds!;
     const clipped = b.minlon < bbox[0] || b.minlat < bbox[1] || b.maxlon > bbox[2] || b.maxlat > bbox[3];
@@ -182,6 +191,7 @@ export async function buildMassifRoutes(m: Massif): Promise<void> {
       details: [
         `Réseau : ${net}`,
         e.wikipedia ? `Article Wikipédia « ${e.wikipedia} » : ${pv.toLocaleString('fr-FR')} consultations sur 12 mois` : 'Pas d’article Wikipédia en français',
+        ...(isPilgrimage(short.find((c) => c.rel.id === e.osmRelation)!.rel.tags ?? {}) ? ['Chemin de pèlerinage : notoriété divisée par deux (itinéraire souvent en plaine et sur route)'] : []),
         `${e.access.length} arrêt(s) de transport à moins de ${(ACCESS_RADIUS_M / 1000).toLocaleString('fr-FR')} km du tracé`,
       ],
     };
