@@ -1,0 +1,44 @@
+{
+  "name": "bivouac-planner",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Préparation de randonnées itinérantes en bivouac en France, 100 % statique et gratuit.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "data": "tsx scripts/build-all.ts",
+    "data:stations": "tsx scripts/01-stations.ts",
+    "data:gtfs": "tsx scripts/02-gtfs.ts",
+    "data:routes": "tsx scripts/03-routes.ts",
+    "data:pois": "tsx scripts/04-pois.ts",
+    "data:protected": "tsx scripts/05-protected.ts",
+    "data:transit": "tsx scripts/06-transit.ts",
+    "data:fares": "tsx scripts/07-fares.ts",
+    "data:dem": "tsx scripts/08-dem.ts",
+    "data:meta": "tsx scripts/09-meta.ts"
+  },
+  "dependencies": {
+    "maplibre-gl": "5.6.2",
+    "suncalc": "1.9.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.1",
+    "@types/geojson": "7946.0.16",
+    "@types/node": "22.15.30",
+    "@types/suncalc": "1.9.2",
+    "eslint": "9.39.1",
+    "fflate": "0.8.2",
+    "shapefile": "0.6.6",
+    "tsx": "4.20.3",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.46.2",
+    "vite": "7.1.12",
+    "vitest": "3.2.4"
+  }
+}
