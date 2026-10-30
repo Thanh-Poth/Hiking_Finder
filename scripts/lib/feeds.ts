@@ -6,7 +6,8 @@ export interface Feed {
   name: string;
   /** Identifiant du jeu sur transport.data.gouv.fr. */
   dataset: string;
-  url: string;
+  /** Une ou plusieurs ressources GTFS (fusionnées). */
+  url: string | string[];
   licence: 'ODbL' | 'Licence Ouverte 2.0';
   /** Jeux nationaux : utilisés pour tous les massifs. */
   national?: boolean;
@@ -22,9 +23,9 @@ export const FEEDS: Feed[] = [
   { id: 'fluo67', name: 'Fluo Grand Est – Bas-Rhin (67)', dataset: '63b4c3d306d317f5caa80dcf', url: TDG + '80417/download', licence: 'Licence Ouverte 2.0' },
   { id: 'fluo68', name: 'Fluo Grand Est – Haut-Rhin (68)', dataset: '63b4c3d374694a83b49dde9d', url: TDG + '80419/download', licence: 'Licence Ouverte 2.0' },
   { id: 'fluo88', name: 'Fluo Grand Est – Vosges (88)', dataset: '63b4c3d3d7857ab0c49dde9d', url: TDG + '80429/download', licence: 'Licence Ouverte 2.0' },
-  { id: 'mobigo', name: 'Mobigo (Bourgogne-Franche-Comté)', dataset: '5f2c9a79e4e713875a58be26', url: DG + '5c995d2c-8e79-4e40-b4a6-c0583c647201', licence: 'Licence Ouverte 2.0' },
+  { id: 'mobigo', name: 'Mobigo (Jura, Doubs, lignes régionales)', dataset: '5f2c9a79e4e713875a58be26', url: [DG + '4001fba7-6078-4345-8859-f424b787c3a7', DG + 'a5f952a8-e0d1-439d-9881-b98fb6c202bb', DG + '28d3c8bf-97f7-40ed-be9f-00e737f74757'], licence: 'Licence Ouverte 2.0' },
   { id: 'haute-savoie', name: 'Réseau interurbain Haute-Savoie (74)', dataset: '607861844a84ad655a94f8c5', url: DG + '71926816-92f8-4620-8b8f-e1804f645e26', licence: 'ODbL' },
-  { id: 'savoie', name: 'Réseau interurbain Savoie (73)', dataset: '607862da7487e5d490677f14', url: DG + '4b74f1b9-fcc0-4e59-bf48-7ed4102e5222', licence: 'ODbL' },
+  { id: 'savoie', name: 'Réseau interurbain Savoie (73)', dataset: '607862da7487e5d490677f14', url: [DG + '4b74f1b9-fcc0-4e59-bf48-7ed4102e5222', DG + '3f74ea07-5385-467c-be4c-74bca2404333'], licence: 'ODbL' },
   { id: 'chamonix', name: 'Réseau urbain Chamonix', dataset: '6569e1dd21f63c926518143b', url: DG + '83a2f241-a0a4-4901-b77b-8a71572a9f6a', licence: 'Licence Ouverte 2.0' },
   { id: 'val-isere', name: "Navettes saisonnières Val d'Isère", dataset: '6798942abc43332729738b53', url: DG + 'd6c3eae8-fab6-4ff2-adc2-32bb2d213dd7', licence: 'Licence Ouverte 2.0' },
   { id: 'isere', name: 'Réseau interurbain Isère (38)', dataset: '5bb1caa6634f4136693d9053', url: DG + '40ee9d6c-3bb9-409e-b670-986212de63f2', licence: 'ODbL' },

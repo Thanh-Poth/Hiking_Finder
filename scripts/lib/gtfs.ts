@@ -50,7 +50,7 @@ export function* table(files: Record<string, Uint8Array>, name: string): Generat
   const key = Object.keys(files).find((k) => k === name || k.endsWith('/' + name));
   if (!key) return;
   const rows = csvRows(strFromU8(files[key]));
-  const header = rows.next().value?.map((h) => h.trim());
+  const header = rows.next().value?.map((h: string) => h.trim());
   if (!header) return;
   for (const r of rows) {
     const o: Record<string, string> = {};
@@ -110,7 +110,7 @@ export function normalizeGtfs(feedId: string, zip: Uint8Array, start: string, da
   return normalizeFiles(feedId, files, start, days);
 }
 
-function mergeFeeds(feedId: string, parts: NormalizedFeed[], start: string, days: number): NormalizedFeed {
+export function mergeFeeds(feedId: string, parts: NormalizedFeed[], start: string, days: number): NormalizedFeed {
   const out: NormalizedFeed = { feed: feedId, start, days, agencies: {}, routes: {}, stops: {}, services: {}, trips: [] };
   parts.forEach((p, i) => {
     const pre = (s: string) => `${i}:${s}`;
@@ -203,6 +203,9 @@ function normalizeFiles(feedId: string, files: Record<string, Uint8Array>, start
     if (activeService.has(t.service_id) && routes[t.route_id]) tripInfo.set(t.trip_id, { route: t.route_id, service: t.service_id });
   }
   const seq = new Map<string, [number, string, number][]>();
+  // SNCF : le mode (TGV INOUI, OUIGO, Train TER, Car TER, INTERCITES…) figure dans stop_id
+  // ("StopPoint:OCETGV INOUI-87686006"). On le garde par course pour l'affichage et les tarifs.
+  const tripMode = new Map<string, string>();
   for (const st of table(files, 'stop_times.txt')) {
     if (!tripInfo.has(st.trip_id)) continue;
     const time = parseTime(st.departure_time || st.arrival_time);
@@ -211,13 +214,26 @@ function normalizeFiles(feedId: string, files: Record<string, Uint8Array>, start
     if (st.pickup_type === '1' && st.drop_off_type === '1') continue;
     if (!seq.has(st.trip_id)) seq.set(st.trip_id, []);
     seq.get(st.trip_id)!.push([Number(st.stop_sequence), stop, time]);
+    if (!tripMode.has(st.trip_id)) {
+      const mode = /^StopPoint:OCE(.+)-\d+$/.exec(st.stop_id)?.[1];
+      if (mode) tripMode.set(st.trip_id, mode);
+    }
   }
   const trips: NormalizedFeed['trips'] = [];
   for (const [id, list] of seq) {
     if (list.length < 2) continue;
     list.sort((a, b) => a[0] - b[0]);
     const info = tripInfo.get(id)!;
-    trips.push({ route: info.route, service: info.service, stops: list.map((x) => x[1]), times: list.map((x) => x[2]) });
+    let route = info.route;
+    const mode = tripMode.get(id);
+    if (mode) {
+      route = `${info.route}#${mode}`;
+      if (!routes[route]) {
+        const base = routes[info.route];
+        routes[route] = { ...base, short: `${mode} ${base.short}`.trim() };
+      }
+    }
+    trips.push({ route, service: info.service, stops: list.map((x) => x[1]), times: list.map((x) => x[2]) });
   }
   return { feed: feedId, start, days, agencies, routes, stops, services, trips };
 }

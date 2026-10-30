@@ -160,7 +160,7 @@ export function bivouacCandidates(
 /** Pénalité (en heures équivalentes) d'un emplacement ; Infinity = inacceptable. */
 export function spotPenalty(s: BivouacSpot, hutAvoidM: number): number {
   let p = 0;
-  if (!s.water) p += 2;
+  if (!s.water) p += 1.5;
   else if (s.water.potable === 'no') p += 0.5;
   if (s.rule.type === 'unknown') p += 0.25;
   if (s.rule.type === 'near_hut_only') {
@@ -204,7 +204,9 @@ export function splitStages(
     if (!isLast) {
       const remaining = effortAt(total) - e0;
       const remainingAvail = avail.slice(day).reduce((s, a) => s + a.hours, 0) || 1;
-      const target = (remaining * avail[day].hours) / remainingAvail;
+      // Répartition au prorata des heures disponibles ; si le temps manque, on remplit chaque jour
+      // au maximum pour ne pas reporter tout le retard sur le dernier jour.
+      const target = remaining > remainingAvail ? avail[day].hours : (remaining * avail[day].hours) / remainingAvail;
       // Limite de faisabilité du jour : heures, km et D+.
       const feasible = (s: BivouacSpot) => {
         if (s.along <= from + 100) return false;
@@ -213,11 +215,10 @@ export function splitStages(
         const st = sectionStats(coords, cum, from, s.along);
         return st.distance / 1000 <= settings.maxKmPerDay && st.gain <= settings.maxGainPerDay;
       };
-      const pick = (lo: number, hi: number, withDry: boolean) => {
+      const pick = (lo: number, hi: number) => {
         let best: BivouacSpot | null = null;
         let bestScore = Infinity;
         for (const s of candidates) {
-          if (!withDry && !s.water) continue;
           const e = effortAt(s.along) - e0;
           if (e < lo || e > hi) continue;
           const pen = spotPenalty(s, settings.hutAvoidM);
@@ -230,17 +231,12 @@ export function splitStages(
         }
         return best;
       };
-      spot = pick(target * 0.75, target * 1.25, false) ?? pick(target * 0.4, target * 1.6, false);
-      if (!spot) {
-        spot = pick(target * 0.5, target * 1.5, true);
-        if (spot) issues.push(`Pas de point d'eau à moins de ${settings.waterRadiusM} m d'un emplacement autorisé près du point idéal : bivouac sans eau, prévoir l'eau du soir et du matin.`);
-      }
-      if (!spot) {
-        spot = pick(0, Infinity, true);
-        if (spot) issues.push("Aucun bivouac conforme près du point idéal : l'étape a été décalée.");
-      }
+      // Une seule notation : écart à la cible (h) + pénalités (sans eau = 1,5 h, règle inconnue…).
+      spot = pick(target * 0.6, target * 1.3) ?? pick(target * 0.3, target * 1.7) ?? pick(0, Infinity);
       if (spot) {
         to = spot.along;
+        if (!spot.water) issues.push(`Pas de point d'eau à moins de ${settings.waterRadiusM} m d'un emplacement autorisé près du point idéal : bivouac sans eau, prévoir l'eau du soir et du matin.`);
+        if (Math.abs(effortAt(spot.along) - e0 - target) > Math.max(1, target * 0.4)) issues.push("Aucun bivouac conforme près du point idéal : l'étape a été décalée.");
       } else {
         // Dernier recours : point idéal, signalé comme problème.
         let lo = from;

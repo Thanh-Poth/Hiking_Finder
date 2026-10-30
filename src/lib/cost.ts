@@ -69,6 +69,15 @@ export function officialLink(agencyName: string, agencyUrl: string): { label: st
   return { label: agencyName || 'Site du transporteur', url: agencyUrl || 'https://transport.data.gouv.fr/' };
 }
 
+/** Famille tarifaire d'un mode ou d'un transporteur SNCF couvert par les grilles ouvertes. */
+export function fareFamily(label: string): 'inoui' | 'ouigo' | 'intercites' | null {
+  const s = label.toUpperCase();
+  if (s.startsWith('TGV INOUI')) return 'inoui';
+  if (s.startsWith('OUIGO')) return 'ouigo';
+  if (s.startsWith('INTERCIT')) return 'intercites';
+  return null;
+}
+
 /** Prix d'un trajet en transport en commun, tronçon par tronçon. */
 export function rideCost(
   leg: RideLeg,
@@ -95,8 +104,11 @@ export function rideCost(
       link,
     };
   }
-  if (fares && from[3] && to[3]) {
-    const entries = fares.od[fareKey(from[3], to[3])];
+  // Les grilles ouvertes ne couvrent que TGV INOUI, OUIGO et Intercités : on ne les applique
+  // qu'aux courses de ces modes (jamais à un TER sur la même relation).
+  const family = fareFamily(shortName);
+  if (fares && family && from[3] && to[3]) {
+    const entries = fares.od[fareKey(from[3], to[3])]?.filter((e) => fareFamily(e.carrier) === family);
     if (entries?.length) {
       const min = Math.min(...entries.map((e) => e.min));
       const max = Math.max(...entries.map((e) => e.max));

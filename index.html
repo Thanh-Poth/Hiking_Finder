@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Préparer une randonnée itinérante en bivouac en France : itinéraires, étapes, points d'eau, transports et coût. Gratuit, sans compte, sans suivi." />
+    <meta name="theme-color" content="#2f6b3a" />
+    <meta name="referrer" content="strict-origin" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <title>Bivouac — préparer sa rando itinérante</title>
+  </head>
+  <body>
+    <a class="skip" href="#panel">Aller au formulaire</a>
+    <header class="topbar">
+      <h1><span aria-hidden="true">⛺</span> Bivouac</h1>
+      <div class="topbar-actions">
+        <button type="button" id="btn-theme" class="icon-btn" aria-label="Basculer le mode sombre" title="Mode sombre">◐</button>
+        <button type="button" id="btn-about" class="icon-btn" aria-haspopup="dialog" title="Sources, licences et confidentialité">ⓘ</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside id="panel" class="panel" aria-label="Paramètres et résultats">
+        <form id="form" class="card" autocomplete="off">
+          <h2>Ma sortie</h2>
+          <label for="f-massif">Massif</label>
+          <select id="f-massif" name="massif" required></select>
+
+          <label for="f-depart">Point de départ (gare ou ville)</label>
+          <input id="f-depart" name="depart" list="stations" placeholder="Ex. Grenoble, Paris Gare de Lyon…" />
+          <datalist id="stations"></datalist>
+          <label class="check"><input type="checkbox" id="f-car" name="car" /> J'y vais en voiture</label>
+
+          <div class="row">
+            <div>
+              <label for="f-days">Nombre de jours</label>
+              <input id="f-days" name="days" type="number" min="1" max="10" value="3" required />
+            </div>
+            <div>
+              <label for="f-date">Jour de départ</label>
+              <input id="f-date" name="date" type="date" />
+            </div>
+          </div>
+          <fieldset class="weekdays">
+            <legend>ou le prochain…</legend>
+            <div id="f-weekdays" class="chips"></div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Type de sortie</legend>
+            <label class="check"><input type="radio" name="mode" value="traverse" checked /> Traversée (retour depuis un autre point)</label>
+            <label class="check"><input type="radio" name="mode" value="roundtrip" /> Aller-retour au même point</label>
+          </fieldset>
+
+          <details id="advanced">
+            <summary>Réglages avancés</summary>
+            <div id="advanced-body" class="advanced"></div>
+          </details>
+        </form>
+
+        <section class="card" aria-labelledby="h-custom">
+          <h2 id="h-custom">Mon propre itinéraire</h2>
+          <div class="btn-row">
+            <button type="button" id="btn-draw">Tracer sur la carte</button>
+            <label class="file-btn">Importer un GPX<input type="file" id="f-gpx" accept=".gpx,application/gpx+xml" /></label>
+          </div>
+          <p class="hint">Le fichier GPX est lu uniquement dans votre navigateur ; il n'est envoyé nulle part.</p>
+          <div id="draw-tools" class="btn-row" hidden>
+            <button type="button" id="btn-draw-undo">Annuler le dernier point</button>
+            <button type="button" id="btn-draw-done" class="primary">Terminer le tracé</button>
+          </div>
+        </section>
+
+        <section id="results" class="card" aria-live="polite" aria-labelledby="h-results">
+          <h2 id="h-results">Itinéraires proposés</h2>
+          <div id="proposals"></div>
+        </section>
+
+        <section id="detail" aria-live="polite"></section>
+      </aside>
+
+      <section class="map-wrap" aria-label="Carte">
+        <div id="map"></div>
+        <div class="map-tools">
+          <label for="f-search" class="sr-only">Rechercher un lieu</label>
+          <input id="f-search" type="search" placeholder="Rechercher (gare, refuge, itinéraire)…" list="places" />
+          <datalist id="places"></datalist>
+          <select id="f-basemap" aria-label="Fond de carte">
+            <option value="ign">Plan IGN</option>
+            <option value="osm">OpenStreetMap</option>
+          </select>
+        </div>
+        <div id="profile" class="profile" aria-label="Profil altimétrique"></div>
+      </section>
+    </main>
+
+    <dialog id="about">
+      <form method="dialog">
+        <div id="about-body"></div>
+        <button class="primary">Fermer</button>
+      </form>
+    </dialog>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

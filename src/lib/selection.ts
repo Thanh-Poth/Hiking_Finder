@@ -141,13 +141,13 @@ export function proposeItineraries(routes: RouteData[], s: SelectionSettings, li
       }
     }
   }
-  // Garde au plus 3 propositions par itinéraire, puis les meilleures au total.
+  // Garde au plus 2 propositions par itinéraire, puis les meilleures au total.
   out.sort((a, b) => b.score - a.score);
   const perRoute = new Map<string, number>();
   const res: Proposal[] = [];
   for (const p of out) {
     const c = perRoute.get(p.route.id) ?? 0;
-    if (c >= 3) continue;
+    if (c >= 2) continue;
     if (res.some((r) => r.route.id === p.route.id && Math.abs(r.lengthM - p.lengthM) < 1500 && Math.abs(r.start.along - p.start.along) < 1500)) continue;
     perRoute.set(p.route.id, c + 1);
     res.push(p);

@@ -7,7 +7,7 @@ import { MASSIFS } from '../src/data/massifs';
 import { padBBox, inBBox } from '../src/lib/geo';
 import { FEEDS } from './lib/feeds';
 import { CACHE, ensureDir, fetchCached, today, writeJson } from './lib/http';
-import { normalizeGtfs, type NormalizedFeed } from './lib/gtfs';
+import { mergeFeeds, normalizeGtfs, type NormalizedFeed } from './lib/gtfs';
 
 export const HORIZON_DAYS = 120;
 
@@ -45,9 +45,14 @@ async function main() {
       continue;
     }
     console.log(`GTFS ${feed.id} : téléchargement…`);
-    const zip = await fetchCached(feed.url, { cacheName: `gtfs-${feed.id}.zip`, maxAgeH: 24 });
-    console.log(`  ${(zip.length / 1e6).toFixed(1)} Mo, normalisation…`);
-    const n = normalizeGtfs(feed.id, new Uint8Array(zip), start, HORIZON_DAYS);
+    const urls = Array.isArray(feed.url) ? feed.url : [feed.url];
+    const parts: NormalizedFeed[] = [];
+    for (const [i, url] of urls.entries()) {
+      const zip = await fetchCached(url, { cacheName: `gtfs-${feed.id}${i ? '-' + i : ''}.zip`, maxAgeH: 24 });
+      console.log(`  ${(zip.length / 1e6).toFixed(1)} Mo, normalisation…`);
+      parts.push(normalizeGtfs(feed.id, new Uint8Array(zip), start, HORIZON_DAYS));
+    }
+    const n = parts.length === 1 ? parts[0] : mergeFeeds(feed.id, parts, start, HORIZON_DAYS);
     console.log(`  ${Object.keys(n.stops).length} arrêts, ${n.trips.length} courses actives`);
     writeFileSync(out, JSON.stringify(n));
     writeFileSync(stamp, start);

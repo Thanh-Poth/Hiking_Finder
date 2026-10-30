@@ -12,7 +12,7 @@ const transit: TransitData = {
     ['La Bérarde', 6.29, 44.93, ''],
   ],
   agencies: [['SNCF', 'https://www.sncf.com', 'sncf'], ['Cars Isère', '', 'isere']],
-  routes: [[0, 'TGV', 2, -1], [1, '3020', 3, -1], [1, 'Express', 3, 2.5]],
+  routes: [[0, 'TGV INOUI 6901', 2, -1], [1, '3020', 3, -1], [1, 'Express', 3, 2.5], [0, 'Train TER K6', 2, -1]],
   services: [],
   trips: [],
   footpaths: [],
@@ -45,6 +45,10 @@ describe('calcul de coût', () => {
     expect(lines[1].min).toBeNull();
     expect(lines[1].detail).toMatch(/Prix non disponible/);
     expect(lines[1].link?.url).toBeTruthy();
+  });
+  it("n'applique pas une grille TGV à un TER sur la même relation", () => {
+    const j: Journey = { ...journey, legs: [{ type: 'ride', trip: 0, route: 3, from: 0, to: 1, dep: 0, arr: 1 }] };
+    expect(journeyCost(j, transit, fares, 0, 'Aller')[0].min).toBeNull();
   });
   it('utilise le tarif GTFS quand il est publié', () => {
     const j: Journey = { ...journey, legs: [{ type: 'ride', trip: 0, route: 2, from: 1, to: 2, dep: 0, arr: 1 }] };
