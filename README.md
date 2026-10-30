@@ -5,7 +5,7 @@ avec nuits en bivouac : choix du massif, du point de départ et des dates, itin�
 découpage en étapes avec bivouacs près de l'eau et conformes aux règles connues, points d'eau,
 horaires de transport, coût estimé, météo à la demande, export GPX et feuille de route imprimable.
 
-- 100 % statique (Vite + TypeScript, MapLibre GL) : hébergeable sur GitHub Pages ou Cloudflare Pages.
+- Fonctionne en local sur votre ordinateur (Vite + TypeScript, MapLibre GL), sans serveur distant.
 - Aucune donnée personnelle collectée : ni compte, ni cookie, ni statistique de visite. Les
   réglages, la checklist et les sorties sauvegardées restent dans le navigateur (IndexedDB).
   Les fichiers GPX importés sont lus localement.
@@ -15,19 +15,26 @@ horaires de transport, coût estimé, météo à la demande, export GPX et feuil
 - Appels externes depuis le navigateur : tuiles de carte (IGN, OpenStreetMap) et, uniquement
   sur clic sur « Charger la météo », Open-Meteo (qui voit alors l'adresse IP).
 
-## Installation
+## Lancer l'application
 
-Prérequis : Node.js 20 ou plus récent.
+Prérequis : [Node.js](https://nodejs.org) (version LTS).
+
+- **Windows** : double-cliquer sur `Lancer.bat`. La première fois, les dépendances s'installent
+  (une minute environ), puis l'application s'ouvre dans le navigateur sur http://localhost:5290.
+  Fermer la fenêtre noire pour l'arrêter.
+- **Autres systèmes** : `npm install` (une seule fois), puis `npm start`.
+
+Les données des 11 massifs sont déjà fournies dans `public/data/` : rien d'autre à préparer.
+
+Pour le développement :
 
 ```bash
-npm install
-npm run dev        # serveur de développement
 npm test           # tests unitaires (Vitest)
 npm run lint       # ESLint
-npm run build      # vérification TypeScript + build de production dans dist/
+npm run build      # vérification TypeScript + build dans dist/
 ```
 
-## Préparation des données
+## Préparation des données (facultatif, déjà faite)
 
 ```bash
 npm run data                       # tout, pour tous les massifs (long : ~10 min par massif)
@@ -113,14 +120,10 @@ Les dates de mise à jour de chaque jeu de données sont affichées dans l'appli
 - **Tracé libre** : segments en ligne droite entre les clics (pas de routage sur le réseau de
   sentiers) ; l'altitude vient de la grille 250 m.
 
-## Déploiement
+## Mettre à jour les données
 
-GitHub Pages : le workflow `.github/workflows/deploy.yml` construit `dist/` et le publie à chaque
-push sur `main` (activer Pages avec la source « GitHub Actions » dans les réglages du dépôt).
-Cloudflare Pages : commande de build `npm run build`, dossier de sortie `dist`.
-
-Les données de `public/data/` sont versionnées : relancer `npm run data` puis committer pour les
-mettre à jour.
+Les données de `public/data/` sont versionnées. Pour les rafraîchir (nouveaux horaires, par
+exemple), lancer `npm run data` (long : environ 10 minutes par massif), puis relancer l'application.
 
 ## Licence
 

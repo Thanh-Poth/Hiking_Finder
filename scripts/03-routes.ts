@@ -71,7 +71,8 @@ async function yearlyPageviews(title: string): Promise<number> {
 function isVariant(tags: Record<string, string>): boolean {
   const s = `${tags.name ?? ''} ${tags.ref ?? ''} ${tags.state ?? ''}`.toLowerCase();
   // Variantes, liaisons et relations qui ne décrivent qu'une étape d'un itinéraire plus long.
-  if (/(é|e)tape|stage|tronçon|section/.test(s)) return true;
+  // \b ne reconnaît pas les lettres accentuées : on délimite les mots à la main.
+  if (/(^|[\s(–-])(é|e)tapes?($|[\s\d:–-])|\bstage\b|tronçon|\bsection\b/.test(s)) return true;
   return /variante|liaison|raccourci|alternative|accès|acces|bretelle|proposed/.test(s) || /^gr ?\d+[a-z]$/i.test((tags.ref ?? '').trim()) && !tags.name;
 }
 
