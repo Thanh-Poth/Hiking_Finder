@@ -1,0 +1,1 @@
+{"massif":"vercors-chartreuse","built":"2026-10-31","routes":5,"pois":6072,"datasets":["osm","refuges-info","ign-alti","ign-plan","wikimedia","sncf-gares","sncf-tarifs","regles-bivouac","gtfs-sncf","gtfs-flixbus","gtfs-blablacar","gtfs-savoie","gtfs-isere","gtfs-transaltitude","gtfs-drome"],"dem":{"bbox":[5.25,44.65,6,45.55],"width":236,"height":401,"step":250}}

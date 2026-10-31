@@ -1,0 +1,1 @@
+{"massif":"jura","built":"2026-10-31","routes":5,"pois":6516,"datasets":["osm","refuges-info","ign-alti","ign-plan","wikimedia","sncf-gares","sncf-tarifs","regles-bivouac","gtfs-sncf","gtfs-flixbus","gtfs-blablacar","gtfs-mobigo","gtfs-haute-savoie"],"dem":{"bbox":[5.6,46.15,6.95,47.3],"width":413,"height":513,"step":250}}

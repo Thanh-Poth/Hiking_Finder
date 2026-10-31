@@ -1,0 +1,1 @@
+{"massif":"vanoise","built":"2026-10-31","routes":5,"pois":1105,"datasets":["osm","refuges-info","ign-alti","ign-plan","wikimedia","sncf-gares","sncf-tarifs","regles-bivouac","gtfs-sncf","gtfs-flixbus","gtfs-blablacar","gtfs-savoie","gtfs-val-isere"],"dem":{"bbox":[6.5,45.2,7.15,45.6],"width":204,"height":179,"step":250}}

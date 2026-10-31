@@ -1,0 +1,1 @@
+{"massif":"corse","built":"2026-10-31","routes":5,"pois":1644,"datasets":["osm","refuges-info","ign-alti","ign-plan","wikimedia","sncf-gares","sncf-tarifs","regles-bivouac","gtfs-sncf","gtfs-flixbus","gtfs-blablacar","gtfs-corse","gtfs-cf-corse"],"dem":{"bbox":[8.5,41.35,9.6,43.05],"width":363,"height":757,"step":250}}

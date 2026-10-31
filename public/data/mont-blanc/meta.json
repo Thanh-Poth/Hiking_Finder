@@ -1,0 +1,1 @@
+{"massif":"mont-blanc","built":"2026-10-31","routes":4,"pois":710,"datasets":["osm","refuges-info","ign-alti","ign-plan","wikimedia","sncf-gares","sncf-tarifs","regles-bivouac","gtfs-sncf","gtfs-flixbus","gtfs-blablacar","gtfs-haute-savoie","gtfs-chamonix"],"dem":{"bbox":[6.65,45.7,7.1,46.05],"width":140,"height":156,"step":250}}

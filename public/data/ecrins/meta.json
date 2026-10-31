@@ -1,0 +1,1 @@
+{"massif":"ecrins","built":"2026-10-31","routes":5,"pois":1428,"datasets":["osm","refuges-info","ign-alti","ign-plan","wikimedia","sncf-gares","sncf-tarifs","regles-bivouac","gtfs-sncf","gtfs-flixbus","gtfs-blablacar","gtfs-isere","gtfs-transaltitude","gtfs-zou-express","gtfs-zou-proximite"],"dem":{"bbox":[6,44.6,6.6,45.1],"width":190,"height":223,"step":250}}

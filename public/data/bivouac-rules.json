@@ -1,0 +1,115 @@
+{
+  "hors-espace-protege": {
+    "id": "hors-espace-protege",
+    "type": "allowed",
+    "title": "Hors espace protégé connu : bivouac généralement toléré",
+    "text": "Le camping isolé est interdit notamment sur les rivages de la mer, dans les sites classés ou inscrits, à moins de 200 m d'un point de captage d'eau potable et là où un arrêté municipal l'interdit (code de l'urbanisme, art. R111-33). Ailleurs, une nuit en bivouac léger, du soir au matin, est généralement tolérée, avec l'accord du propriétaire du terrain. Vérifier auprès de la mairie.",
+    "sourceName": "Code de l'urbanisme, article R111-33 (présentation sur entreprises.gouv.fr, ministère de l'Économie)",
+    "sourceUrl": "https://www.entreprises.gouv.fr/fr/tourisme/conseils-strategie/terrains-de-camping-declares",
+    "checked": "2026-10-31"
+  },
+  "pn-ecrins-coeur": {
+    "id": "pn-ecrins-coeur",
+    "type": "night_only",
+    "hours": "19:00–09:00",
+    "title": "Cœur du Parc national des Écrins : bivouac de 19 h à 9 h",
+    "text": "Bivouac autorisé si toutes ces conditions sont réunies : installation après 19 h et désinstallation avant 9 h (sauf intempéries) ; petite tente ne permettant pas la station debout ; une seule nuit sur un même site ; à plus d'une heure de marche des limites du cœur (sauf Pré de la Chaumette et abords du refuge de l'Olan) et des parkings et routes du cœur. Interdit dans les sites fragiles signalés, sur les rives des lacs (moins de 500 m du Lauvitel et de la Muzelle hors zones dédiées), sur les routes, parkings et drop-zones. Réchaud à gaz seul autorisé, feux interdits. Des quotas ou réservations peuvent s'appliquer sur certains sites.",
+    "sourceName": "Parc national des Écrins, arrêté n°148/2026 du 16 juin 2026 (version consolidée, arrêté rectificatif n°185-2026 du 6 juillet 2026)",
+    "sourceUrl": "https://www.ecrins-parcnational.fr/sites/ecrins-parcnational.com/files/fiche_doc/27327/2606148arretebivouacvf-rectificatif.pdf",
+    "checked": "2026-10-31"
+  },
+  "pn-mercantour-coeur": {
+    "id": "pn-mercantour-coeur",
+    "type": "night_only",
+    "hours": "19:00–09:00",
+    "title": "Cœur du Parc national du Mercantour : bivouac de 19 h à 9 h",
+    "text": "Toute forme de campement est interdite dans le cœur. Le bivouac est autorisé entre 19 h et 9 h, à plus d'une heure de marche des limites du cœur ou du dernier accès routier. Des secteurs (vallées des Merveilles et de Fontanalba notamment) ont des règles complémentaires : se renseigner.",
+    "sourceName": "Parc national du Mercantour, démarche « Demande d'autorisation de campement en cœur de parc »",
+    "sourceUrl": "https://demarche.numerique.gouv.fr/commencer/demande-d-autorisation-de-campement-en-coeur-de-pa",
+    "checked": "2026-10-31"
+  },
+  "pn-pyrenees-coeur": {
+    "id": "pn-pyrenees-coeur",
+    "type": "night_only",
+    "hours": "19:00–09:00",
+    "title": "Cœur du Parc national des Pyrénées : bivouac de 19 h à 9 h",
+    "text": "Le camping est interdit dans tout le cœur. Le bivouac, sous une tente n'autorisant pas la station debout ou dans un abri naturel, est autorisé entre 19 heures et 9 heures, soit à plus d'une heure de marche des voies accessibles aux véhicules, soit sur des aires agréées et matérialisées sur le terrain.",
+    "sourceName": "Arrêté du 29 août 2013 relatif au camping et au bivouac dans le cœur du Parc national des Pyrénées (AIDA – INERIS)",
+    "sourceUrl": "https://aida.ineris.fr/reglementation/arrete-290813-relatif-camping-bivouac-coeur-parc-national-pyrenees",
+    "checked": "2026-10-31"
+  },
+  "pn-cevennes-coeur": {
+    "id": "pn-cevennes-coeur",
+    "type": "night_only",
+    "hours": "19:00–09:00",
+    "title": "Cœur du Parc national des Cévennes : bivouac de 19 h à 9 h le long des GR",
+    "text": "Bivouac autorisé pour les randonneurs non motorisés, sous tente légère ne permettant pas la station debout ou sans tente, une seule nuit d'affilée, entre 19 h et 9 h, uniquement le long des GR et GRP balisés, à 50 m maximum de chaque côté de l'itinéraire. Exclu sur certains tronçons (Causse Méjean, Mont Lozère, Aigoual). Dans tous les autres cas, le bivouac est interdit en cœur de parc.",
+    "sourceName": "Parc national des Cévennes, arrêté n°2014-0007 du 20 janvier 2014 (modifié par l'arrêté n°2016-0390) – AIDA INERIS",
+    "sourceUrl": "https://aida.ineris.fr/reglementation/arrete-ndeg-20140007-200114-reglementant-bivouac-coeur-parc-national-cevennes",
+    "checked": "2026-10-31"
+  },
+  "pn-vanoise-coeur": {
+    "id": "pn-vanoise-coeur",
+    "type": "near_hut_only",
+    "title": "Cœur du Parc national de la Vanoise : bivouac près de certains refuges uniquement",
+    "text": "En cœur de parc, le bivouac n'est autorisé qu'à proximité immédiate d'une vingtaine de refuges désignés, en période estivale et sur réservation auprès du refuge. Il est interdit ailleurs dans le cœur.",
+    "sourceName": "Parc national de la Vanoise, brochure « Bivouac » (2025), diffusée par le Département de la Savoie",
+    "sourceUrl": "https://www.savoie.fr/upload/docs/application/pdf/2025-06/brochure_bivouac_-_parc_national_de_la_vanoise.pdf.pdf",
+    "checked": "2026-10-31"
+  },
+  "rnn-hauts-plateaux-vercors": {
+    "id": "rnn-hauts-plateaux-vercors",
+    "type": "night_only",
+    "hours": "17:00–09:00",
+    "title": "Réserve naturelle des Hauts-Plateaux du Vercors : bivouac d'une nuit de 17 h à 9 h",
+    "text": "Le bivouac est le campement d'une nuit constitué par une installation légère et temporaire entre 17 h et 9 h le matin. Il est autorisé dans le respect du décret n°85-280 et de son arrêté d'application. Le camping est interdit hors autorisation (laissez-camper), les feux et les chiens sont interdits.",
+    "sourceName": "Arrêté d'application du décret de création de la réserve naturelle des Hauts-Plateaux du Vercors, article 15",
+    "sourceUrl": "https://www.parc-du-vercors.fr/sites/default/files/actualites/Accueil%20Biodiversit%C3%A9/ArreteApplicationDecretRNHPVComplet.pdf",
+    "checked": "2026-10-31"
+  },
+  "rnn": {
+    "id": "rnn",
+    "type": "unknown",
+    "title": "Réserve naturelle nationale : règle inconnue, vérifier",
+    "text": "Le bivouac est souvent interdit ou strictement encadré dans les réserves naturelles nationales (décret de création propre à chaque réserve). Aucune règle n'a été vérifiée pour cette réserve : consulter le gestionnaire avant de planter la tente.",
+    "sourceName": "Réserves naturelles de France",
+    "sourceUrl": "https://www.reserves-naturelles.org/",
+    "checked": "2026-10-31"
+  },
+  "rnr": {
+    "id": "rnr",
+    "type": "unknown",
+    "title": "Réserve naturelle régionale : règle inconnue, vérifier",
+    "text": "Les réserves naturelles régionales ont un règlement propre fixé par la Région. Aucune règle n'a été vérifiée ici : consulter le gestionnaire.",
+    "sourceName": "Réserves naturelles de France",
+    "sourceUrl": "https://www.reserves-naturelles.org/",
+    "checked": "2026-10-31"
+  },
+  "rb": {
+    "id": "rb",
+    "type": "unknown",
+    "title": "Réserve biologique (ONF) : règle inconnue, vérifier",
+    "text": "Les réserves biologiques, intégrales notamment, peuvent restreindre l'accès et le bivouac. Aucune règle vérifiée : se renseigner auprès de l'Office national des forêts.",
+    "sourceName": "Office national des forêts",
+    "sourceUrl": "https://www.onf.fr/",
+    "checked": "2026-10-31"
+  },
+  "apb": {
+    "id": "apb",
+    "type": "unknown",
+    "title": "Arrêté de protection de biotope : règle inconnue, vérifier",
+    "text": "Un arrêté préfectoral de protection de biotope peut interdire le bivouac ou l'accès à certaines périodes. Consulter l'arrêté auprès de la préfecture.",
+    "sourceName": "Préfecture du département",
+    "sourceUrl": "https://www.service-public.fr/",
+    "checked": "2026-10-31"
+  },
+  "pn-coeur": {
+    "id": "pn-coeur",
+    "type": "unknown",
+    "title": "Cœur de parc national : règle non vérifiée",
+    "text": "Les cœurs de parcs nationaux réglementent le bivouac. La règle de ce parc n'a pas été vérifiée : consulter le site du parc.",
+    "sourceName": "Parcs nationaux de France",
+    "sourceUrl": "https://www.parcsnationaux.fr/",
+    "checked": "2026-10-31"
+  }
+}

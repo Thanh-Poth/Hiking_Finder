@@ -1,0 +1,1 @@
+{"massif":"mercantour","built":"2026-10-31","routes":5,"pois":2316,"datasets":["osm","refuges-info","ign-alti","ign-plan","wikimedia","sncf-gares","sncf-tarifs","regles-bivouac","gtfs-sncf","gtfs-flixbus","gtfs-blablacar","gtfs-zou-express","gtfs-zou-proximite","gtfs-lignes-azur"],"dem":{"bbox":[6.5,43.9,7.7,44.45],"width":384,"height":245,"step":250}}
