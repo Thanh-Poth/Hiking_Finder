@@ -8,6 +8,11 @@ const wait = rateLimiter(3);
 const CHUNK = 4000;
 
 export async function elevations(points: readonly (readonly number[])[]): Promise<number[]> {
+  return fillGaps(await rawElevations(points));
+}
+
+/** Altitudes brutes : NaN hors de la couverture IGN (c'est-à-dire hors de France). */
+export async function rawElevations(points: readonly (readonly number[])[]): Promise<number[]> {
   const out: number[] = [];
   for (let i = 0; i < points.length; i += CHUNK) {
     const chunk = points.slice(i, i + CHUNK);
@@ -23,7 +28,7 @@ export async function elevations(points: readonly (readonly number[])[]): Promis
     // -99999 = hors couverture (mer, étranger) : on garde NaN pour l'interpolation.
     out.push(...res.elevations.map((e) => (e > -1000 ? Math.round(e * 10) / 10 : NaN)));
   }
-  return fillGaps(out);
+  return out;
 }
 
 /** Remplace les NaN par interpolation linéaire (ou la valeur voisine aux extrémités). */

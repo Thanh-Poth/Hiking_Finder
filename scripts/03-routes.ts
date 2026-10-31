@@ -10,11 +10,12 @@
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { MASSIFS, type Massif } from '../src/data/massifs';
+import { inMassif, MASSIFS, type Massif } from '../src/data/massifs';
 import { cumulativeDistances, haversine, padBBox, resample, simplify, snapToLine } from '../src/lib/geo';
 import { elevationGainLoss } from '../src/lib/geo';
 import type { AccessStop, RouteData } from '../src/data/types';
 import { elevations, smooth } from './lib/elevation';
+import { inFrance, loadFrance } from './lib/france';
 import { CACHE, fetchJson, OUT, readJson, writeJson } from './lib/http';
 import { obbox, overpass, type OsmElement } from './lib/overpass';
 import { stitch } from './lib/stitch';
@@ -22,12 +23,14 @@ import type { IndexedStop } from './02-gtfs';
 
 const TOP = 5;
 const MIN_LENGTH_M = 15000;
+/** Part minimale du tracé située en France (les emprises des massifs débordent sur la Suisse et l'Italie). */
+const MIN_FRANCE_SHARE = 0.6;
 const ACCESS_RADIUS_M = 1500;
 const NETWORK_WEIGHT: Record<string, number> = { iwn: 1, nwn: 0.9, rwn: 0.6, lwn: 0.3 };
 
 /** Chemins de pèlerinage : surtout en plaine et sur route, peu adaptés à l'itinérance en bivouac. */
 function isPilgrimage(tags: Record<string, string>): boolean {
-  return tags.pilgrimage === 'yes' || /compostelle|saint-jacques|st-jacques|francigena|via cluny|podiensis|gebennensis|camino|chemin de st/i.test(`${tags.name ?? ''} ${tags.ref ?? ''}`);
+  return tags.pilgrimage === 'yes' || /compostelle|saint-jacques|st-jacques|francigena|via cluny|podiensis|gebennensis|camino|chemin de st|szombathely|sancti martini/i.test(`${tags.name ?? ''} ${tags.ref ?? ''}`);
 }
 const PILGRIMAGE_FACTOR = 0.5;
 
@@ -113,6 +116,7 @@ function overlap(a: number[][], b: number[][]): number {
 export async function buildMassifRoutes(m: Massif): Promise<void> {
   console.log(`\n== ${m.name}`);
   const bbox = padBBox(m.bbox, 2000);
+  await loadFrance();
   const rels = await overpass(`[out:json][timeout:180];rel["route"="hiking"](${obbox(m.bbox)});out tags bb;`);
   const stopsFile = join(CACHE, `stops-${m.id}.json`);
   const stops: IndexedStop[] = existsSync(stopsFile) ? readJson(stopsFile) : [];
@@ -121,17 +125,23 @@ export async function buildMassifRoutes(m: Massif): Promise<void> {
   const cands: Candidate[] = [];
   for (const r of rels) {
     const t = r.tags ?? {};
-    const name = t.name ?? t.ref;
+    const name = t['name:fr'] ?? t.name ?? t.ref;
     if (!name || isVariant(t) || !r.bounds) continue;
+    // Une relation sans nom (simple code de balisage) n'est pas présentable, sauf un GR.
+    if (!t.name && !t['name:fr'] && !/^gr/i.test(t.ref ?? '')) continue;
+    // Emprise sans aucun point en France (coins, milieux des côtés, centre) : itinéraire étranger.
+    const { minlon: w, minlat: so, maxlon: e, maxlat: n } = r.bounds;
+    const probes = [[w, so], [w, n], [e, so], [e, n], [(w + e) / 2, (so + n) / 2], [(w + e) / 2, so], [(w + e) / 2, n], [w, (so + n) / 2], [e, (so + n) / 2]];
+    if (!probes.some((p) => inFrance(p))) continue;
     const net = NETWORK_WEIGHT[t.network ?? ''] ?? 0;
     if (net < 0.3 || (net === 0.3 && !t.wikidata && !t.wikipedia)) continue;
     const diag = haversine([r.bounds.minlon, r.bounds.minlat], [r.bounds.maxlon, r.bounds.maxlat]);
     if (diag < 4000) continue;
     const pre = (net + (t.wikidata || t.wikipedia ? 0.3 : 0)) * (isPilgrimage(t) ? PILGRIMAGE_FACTOR : 1);
-    cands.push({ rel: r, name: t.name && t.ref && !t.name.includes(t.ref) ? `${t.ref} – ${t.name}` : name, pre, pageviews: 0 });
+    cands.push({ rel: r, name: t.ref && !name.includes(t.ref) ? `${t.ref} – ${name}` : name, pre, pageviews: 0 });
   }
   cands.sort((a, b) => b.pre - a.pre);
-  const short = cands.slice(0, 18);
+  const short = cands.slice(0, 30);
   for (const c of short) {
     c.wikiTitle = await frWikiTitle(c.rel.tags ?? {});
     if (c.wikiTitle) c.pageviews = await yearlyPageviews(c.wikiTitle);
@@ -144,11 +154,17 @@ export async function buildMassifRoutes(m: Massif): Promise<void> {
   for (const c of short) {
     const els = await geometry(c.rel.id);
     const ways = els.filter((e) => e.type === 'way' && e.geometry).map((e) => e.geometry!.map((g) => [g.lon, g.lat] as [number, number]));
-    const st = stitch(ways, bbox, c.rel.tags?.roundtrip === 'yes');
+    const st = stitch(ways, (p) => inMassif(m, p, 2000), c.rel.tags?.roundtrip === 'yes');
     if (!st) continue;
     const line = simplify(st.coords, 5);
     const lengthM = cumulativeDistances(line).at(-1)!;
     if (lengthM < MIN_LENGTH_M) continue;
+    const probe = resample(line, 1000);
+    const franceShare = probe.filter((p) => inFrance(p)).length / probe.length;
+    if (franceShare < MIN_FRANCE_SHARE) {
+      console.log(`  × ${c.name} : ${Math.round(franceShare * 100)} % du tracé en France, écarté`);
+      continue;
+    }
     const access = accessStops(line, stops, stopIndex);
     const top3 = [...access].sort((a, b) => b.departuresPerDay - a.departuresPerDay).slice(0, 3);
     const accessRaw = Math.log1p(top3.reduce((s, a) => s + a.departuresPerDay, 0)) + 0.15 * Math.min(access.length, 10);
@@ -201,6 +217,7 @@ export async function buildMassifRoutes(m: Massif): Promise<void> {
   const chosen: typeof evaluated = [];
   for (const e of evaluated) {
     if (chosen.length >= TOP) break;
+    if (chosen.some((c) => c.name === e.name)) continue;
     if (chosen.some((c) => overlap(e.coords, c.coords) > 0.5 || overlap(c.coords, e.coords) > 0.5)) continue;
     chosen.push(e);
   }

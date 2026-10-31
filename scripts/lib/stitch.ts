@@ -4,7 +4,7 @@
 // (chemin le plus long entre deux extrémités). Pour une boucle, on referme le tour par le chemin
 // le plus court qui n'emprunte pas le premier tronçon.
 
-import { haversine, inBBox } from '../../src/lib/geo';
+import { haversine } from '../../src/lib/geo';
 
 type Pt = [number, number];
 
@@ -63,9 +63,9 @@ export class LineGraph {
     return i;
   }
 
-  addWay(coords: Pt[], bbox?: readonly number[]) {
+  addWay(coords: Pt[], inside?: (p: Pt) => boolean) {
     for (let i = 1; i < coords.length; i++) {
-      if (bbox && (!inBBox(coords[i - 1], bbox) || !inBBox(coords[i], bbox))) continue;
+      if (inside && (!inside(coords[i - 1]) || !inside(coords[i]))) continue;
       const a = this.node(coords[i - 1]);
       const b = this.node(coords[i]);
       if (a === b) continue;
@@ -148,9 +148,9 @@ export interface Stitched {
   networkLength: number;
 }
 
-export function stitch(ways: Pt[][], bbox: readonly number[], roundtrip: boolean): Stitched | null {
+export function stitch(ways: Pt[][], inside: (p: Pt) => boolean, roundtrip: boolean): Stitched | null {
   const g = new LineGraph();
-  for (const w of ways) g.addWay(w, bbox);
+  for (const w of ways) g.addWay(w, inside);
   const comp = g.largestComponent();
   if (comp.length < 2) return null;
   let networkLength = 0;
