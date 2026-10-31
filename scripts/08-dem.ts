@@ -5,8 +5,8 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { MASSIFS, type Massif } from '../src/data/massifs';
-import { demGrid } from '../src/lib/dem';
-import { elevations } from './lib/elevation';
+import { DEM_NODATA, demGrid } from '../src/lib/dem';
+import { rawElevations } from './lib/elevation';
 import { ensureDir, OUT } from './lib/http';
 
 export const DEM_STEP_M = 250;
@@ -18,9 +18,10 @@ export async function buildDem(m: Massif): Promise<void> {
     for (let x = 0; x < g.width; x++) pts.push([g.bbox[0] + x * g.dLon, g.bbox[3] - y * g.dLat]);
   }
   console.log(`${m.id} : ${g.width}×${g.height} = ${pts.length} points…`);
-  const eles = await elevations(pts);
+  // Hors couverture IGN (étranger, mer) : valeur « inconnue » plutôt qu'une altitude inventée.
+  const eles = await rawElevations(pts);
   const buf = Buffer.alloc(pts.length * 2);
-  eles.forEach((e, i) => buf.writeInt16LE(Math.max(-32768, Math.min(32767, Math.round(e))), i * 2));
+  eles.forEach((e, i) => buf.writeInt16LE(Number.isFinite(e) ? Math.max(-32767, Math.min(32767, Math.round(e))) : DEM_NODATA, i * 2));
   ensureDir(join(OUT, m.id));
   writeFileSync(join(OUT, m.id, 'dem.bin'), buf);
 }

@@ -2,6 +2,9 @@
 
 import type { BBox } from '../data/massifs';
 
+/** Valeur des cellules sans altitude connue (hors de France). */
+export const DEM_NODATA = -32768;
+
 export interface DemGrid {
   bbox: BBox;
   width: number;
@@ -35,7 +38,22 @@ export function demSample(g: DemGrid, data: Int16Array, lon: number, lat: number
   const tx = fx - x0;
   const ty = fy - y0;
   const v = (x: number, y: number) => data[y * g.width + x];
+  if ([v(x0, y0), v(x1, y0), v(x0, y1), v(x1, y1)].includes(DEM_NODATA)) return NaN;
   const top = v(x0, y0) * (1 - tx) + v(x1, y0) * tx;
   const bottom = v(x0, y1) * (1 - tx) + v(x1, y1) * tx;
   return top * (1 - ty) + bottom * ty;
+}
+
+/** Remplace les altitudes inconnues (NaN) par interpolation entre voisins connus ; 0 si aucune. */
+export function fillUnknown(v: readonly number[]): number[] {
+  const out = v.slice();
+  let prev = -1;
+  for (let i = 0; i < v.length; i++) {
+    if (Number.isFinite(v[i])) {
+      for (let k = prev + 1; k < i; k++) out[k] = prev < 0 ? v[i] : v[prev] + ((v[i] - v[prev]) * (k - prev)) / (i - prev);
+      prev = i;
+    }
+  }
+  for (let k = prev + 1; k < v.length; k++) out[k] = prev < 0 ? 0 : v[prev];
+  return out;
 }

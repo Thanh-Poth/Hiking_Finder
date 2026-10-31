@@ -33,16 +33,27 @@ export async function rawElevations(points: readonly (readonly number[])[]): Pro
 
 /** Remplace les NaN par interpolation linéaire (ou la valeur voisine aux extrémités). */
 export function fillGaps(v: number[]): number[] {
-  const known = v.map((x, i) => (Number.isFinite(x) ? i : -1)).filter((i) => i >= 0);
-  if (known.length === 0) return v.map(() => 0);
-  return v.map((x, i) => {
-    if (Number.isFinite(x)) return x;
-    const next = known.find((k) => k > i);
-    const prev = [...known].reverse().find((k) => k < i);
-    if (prev === undefined) return v[next!];
-    if (next === undefined) return v[prev];
-    return v[prev] + ((v[next] - v[prev]) * (i - prev)) / (next - prev);
-  });
+  const out = v.slice();
+  const n = v.length;
+  // Indice du prochain point connu, calculé en un seul passage arrière (temps linéaire).
+  const next = new Int32Array(n).fill(-1);
+  for (let i = n - 1, k = -1; i >= 0; i--) {
+    next[i] = k;
+    if (Number.isFinite(v[i])) k = i;
+  }
+  let prev = -1;
+  for (let i = 0; i < n; i++) {
+    if (Number.isFinite(v[i])) {
+      prev = i;
+      continue;
+    }
+    const nx = next[i];
+    if (prev < 0 && nx < 0) out[i] = 0;
+    else if (prev < 0) out[i] = v[nx];
+    else if (nx < 0) out[i] = v[prev];
+    else out[i] = v[prev] + ((v[nx] - v[prev]) * (i - prev)) / (nx - prev);
+  }
+  return out;
 }
 
 /** Moyenne glissante sur `w` points (lissage du bruit du MNT avant calcul du dénivelé). */

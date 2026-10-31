@@ -2,7 +2,7 @@ import './style.css';
 import { getMassif, MASSIFS } from './data/massifs';
 import { loadDem, loadGlobal, loadMassif, type GlobalData, type MassifData } from './data/load';
 import type { RouteData, Station } from './data/types';
-import { demGrid, demSample } from './lib/dem';
+import { demGrid, demSample, fillUnknown } from './lib/dem';
 import { cumulativeDistances, elevationGainLoss, haversine, resample, snapToLine } from './lib/geo';
 import { buildGpx, gpxToLine, parseGpx } from './lib/gpx';
 import { computePlan, type PlanResult } from './lib/plan';
@@ -243,7 +243,8 @@ async function withElevation(line: number[][]): Promise<number[][]> {
   const m = getMassif(params.massif)!;
   const dem = await loadDem(m.id);
   const g = demGrid(m.bbox, data?.meta?.dem?.step ?? 250);
-  return pts.map((p) => [p[0], p[1], dem ? Math.round(demSample(g, dem, p[0], p[1])) || 0 : 0]);
+  const eles = fillUnknown(pts.map((p) => (dem ? demSample(g, dem, p[0], p[1]) : NaN)));
+  return pts.map((p, i) => [p[0], p[1], Math.round(eles[i])]);
 }
 
 async function setCustom(name: string, line: number[][]) {
