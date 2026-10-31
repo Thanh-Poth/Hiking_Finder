@@ -1,0 +1,9 @@
+{
+  "_comment": "Points de départ hors du référentiel SNCF. Coordonnées des arrêts du GTFS Chemins de fer de la Corse (Licence Ouverte 2.0). Ajaccio et Bastia sont à quelques minutes à pied des ports.",
+  "stations": [
+    { "name": "Ajaccio (gare CFC)", "lon": 8.73981, "lat": 41.93015, "uic": "cfc-ajaccio", "segment": "b" },
+    { "name": "Bastia (gare CFC)", "lon": 9.44783, "lat": 42.70213, "uic": "cfc-bastia", "segment": "b" },
+    { "name": "Calvi (gare CFC)", "lon": 8.75595, "lat": 42.56456, "uic": "cfc-calvi", "segment": "b" },
+    { "name": "Corte (gare CFC)", "lon": 9.15953, "lat": 42.30186, "uic": "cfc-corte", "segment": "b" }
+  ]
+}

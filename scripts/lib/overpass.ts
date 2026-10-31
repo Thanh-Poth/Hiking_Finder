@@ -19,6 +19,23 @@ export interface OsmElement {
 
 export async function overpass(query: string, maxAgeH = 24 * 7): Promise<OsmElement[]> {
   let last: unknown;
+  // Serveurs saturés (502/504 en série) : on laisse passer une minute puis on refait le tour, 3 fois.
+  for (let round = 0; round < 3; round++) {
+    if (round) {
+      console.warn(`  Overpass indisponible, nouvel essai dans 60 s (tour ${round + 1}/3)`);
+      await new Promise((r) => setTimeout(r, 60_000));
+    }
+    const res = await tryEndpoints(query, maxAgeH).catch((e: unknown) => {
+      last = e;
+      return null;
+    });
+    if (res) return res;
+  }
+  throw last;
+}
+
+async function tryEndpoints(query: string, maxAgeH: number): Promise<OsmElement[]> {
+  let last: unknown;
   for (const url of ENDPOINTS) {
     try {
       await wait();
@@ -34,7 +51,7 @@ export async function overpass(query: string, maxAgeH = 24 * 7): Promise<OsmElem
       return json.elements;
     } catch (e) {
       last = e;
-      console.warn(`  Overpass ${url} : ${(e as Error).message}`);
+      console.warn(`  Overpass ${url} : ${e instanceof Error ? e.message : String(e)}`);
     }
   }
   throw last;

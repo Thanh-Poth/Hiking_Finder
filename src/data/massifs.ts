@@ -22,7 +22,7 @@ export const MASSIFS: Massif[] = [
   { id: 'mont-blanc', name: 'Mont-Blanc', bbox: [6.65, 45.7, 7.1, 46.05], feeds: ['haute-savoie', 'chamonix'], alpine: true },
   { id: 'vanoise', name: 'Vanoise', bbox: [6.5, 45.2, 7.15, 45.6], feeds: ['savoie', 'val-isere'], alpine: true },
   { id: 'ecrins', name: 'Écrins', bbox: [6.0, 44.6, 6.6, 45.1], feeds: ['isere', 'zou-express', 'zou-proximite', 'transaltitude'], alpine: true },
-  { id: 'vercors-chartreuse', name: 'Vercors / Chartreuse', bbox: [5.25, 44.65, 6.0, 45.55], feeds: ['isere', 'drome', 'savoie', 'transaltitude'], alpine: false },
+  { id: 'vercors-chartreuse', name: 'Vercors / Chartreuse', bbox: [5.25, 44.65, 6.0, 45.55], exclude: [[5.88, 44.65, 6.0, 45.45], [5.95, 45.45, 6.0, 45.55], [5.76, 44.95, 5.88, 45.2]], feeds: ['isere', 'drome', 'savoie', 'transaltitude'], alpine: false },
   { id: 'mercantour', name: 'Alpes du Sud / Mercantour', bbox: [6.5, 43.9, 7.7, 44.45], feeds: ['zou-express', 'zou-proximite', 'lignes-azur'], alpine: true },
   { id: 'pyrenees', name: 'Pyrénées', bbox: [-1.8, 42.6, 3.2, 43.2], feeds: ['lio', 'pyrenees-atlantiques'], alpine: true },
   { id: 'massif-central', name: 'Massif central / Cévennes', bbox: [2.3, 43.85, 4.3, 45.6], feeds: ['lio', 'cantal', 'puy-de-dome', 'ardeche'], alpine: false },

@@ -1,10 +1,11 @@
 // Gares de départ proposées dans la recherche : référentiel SNCF « Gares de voyageurs » (ODbL).
 // Segments DRG A (gares nationales) et B (gares régionales) ; les gares A servent d'origines
-// pour la préparation des horaires de chaque massif.
+// pour la préparation des horaires de chaque massif. S'y ajoutent les gares hors réseau SNCF
+// (data-src/stations-extra.json : gares des Chemins de fer de la Corse).
 
 import { join } from 'node:path';
 import type { Station } from '../src/data/types';
-import { fetchJson, OUT, writeJson } from './lib/http';
+import { fetchJson, OUT, readJson, ROOT, writeJson } from './lib/http';
 
 interface Gare {
   nom: string;
@@ -25,6 +26,7 @@ async function main() {
     const uic = g.codes_uic.split(';')[0].trim().padStart(8, '0');
     out.push({ name: g.nom, lon: Math.round(g.position_geographique.lon * 1e5) / 1e5, lat: Math.round(g.position_geographique.lat * 1e5) / 1e5, uic, segment: seg });
   }
+  out.push(...readJson<{ stations: Station[] }>(join(ROOT, 'data-src', 'stations-extra.json')).stations);
   out.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
   writeJson(join(OUT, 'stations.json'), out);
   console.log(`${out.length} gares (dont ${out.filter((s) => s.segment === 'a').length} nationales)`);

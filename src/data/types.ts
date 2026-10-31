@@ -116,6 +116,8 @@ export interface TransitData {
   footpaths: [number, number, number][];
   /** Arrêts proposés comme points de départ (grandes gares). */
   origins: number[];
+  /** Flux expirés -> dernier jour publié (AAAAMMJJ) : horaires répétés à partir de la dernière semaine. */
+  indicative?: Record<string, string>;
 }
 
 export interface Station {

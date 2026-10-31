@@ -1,7 +1,7 @@
 // Lecture d'archives GTFS et normalisation en un format intermédiaire compact (cache de build).
 
 import { unzipSync, strFromU8 } from 'fflate';
-import { encodeBits, gtfsServiceBits } from '../../src/lib/calendar';
+import { addDays, bitAt, encodeBits, gtfsServiceBits, parseYmd, setBit, toIsoDate } from '../../src/lib/calendar';
 
 /** Analyse CSV (RFC 4180) : guillemets, virgules et retours à la ligne dans les champs, BOM. */
 export function* csvRows(text: string): Generator<string[]> {
@@ -81,6 +81,8 @@ export interface NormalizedFeed {
   stops: Record<string, NStop>;
   services: Record<string, string>;
   trips: { route: string; service: string; stops: string[]; times: number[] }[];
+  /** Jeu expiré : dernier jour publié (AAAAMMJJ), horaires projetés sur la dernière semaine connue. */
+  indicativeUntil?: string;
 }
 
 const UIC_RE = /(87\d{6})/;
@@ -119,6 +121,7 @@ export function mergeFeeds(feedId: string, parts: NormalizedFeed[], start: strin
     for (const [k, v] of Object.entries(p.stops)) out.stops[pre(k)] = v;
     for (const [k, v] of Object.entries(p.services)) out.services[pre(k)] = v;
     for (const t of p.trips) out.trips.push({ route: pre(t.route), service: pre(t.service), stops: t.stops.map(pre), times: t.times });
+    if (p.indicativeUntil && (!out.indicativeUntil || p.indicativeUntil < out.indicativeUntil)) out.indicativeUntil = p.indicativeUntil;
   });
   return out;
 }
@@ -190,9 +193,21 @@ function normalizeFiles(feedId: string, files: Record<string, Uint8Array>, start
   }
   const services: Record<string, string> = {};
   const activeService = new Set<string>();
-  for (const id of new Set([...cals.keys(), ...exc.keys()])) {
+  const serviceIds = new Set([...cals.keys(), ...exc.keys()]);
+  for (const id of serviceIds) {
     const bits = gtfsServiceBits(start, days, cals.get(id), exc.get(id));
     if (bits.some((b) => b !== 0)) {
+      services[id] = encodeBits(bits);
+      activeService.add(id);
+    }
+  }
+  // Jeu expiré (aucune course sur l'horizon) : on répète la dernière semaine publiée, signalée
+  // comme indicative dans l'application, plutôt que de perdre le réseau (ex. Chemins de fer de la Corse).
+  let indicativeUntil: string | undefined;
+  if (!activeService.size && serviceIds.size) {
+    const projected = projectLastWeek(start, days, serviceIds, cals, exc);
+    indicativeUntil = projected.until;
+    for (const [id, bits] of projected.services) {
       services[id] = encodeBits(bits);
       activeService.add(id);
     }
@@ -235,5 +250,32 @@ function normalizeFiles(feedId: string, files: Record<string, Uint8Array>, start
     }
     trips.push({ route, service: info.service, stops: list.map((x) => x[1]), times: list.map((x) => x[2]) });
   }
-  return { feed: feedId, start, days, agencies, routes, stops, services, trips };
+  return { feed: feedId, start, days, agencies, routes, stops, services, trips, ...(indicativeUntil ? { indicativeUntil } : {}) };
+}
+
+/** Jours de circulation de chaque service pendant les 7 derniers jours publiés, répétés sur l'horizon. */
+export function projectLastWeek(
+  start: string,
+  days: number,
+  ids: Set<string>,
+  cals: Map<string, { weekdays: number[]; start: string; end: string }>,
+  exc: Map<string, Map<string, number>>,
+): { until: string; services: Map<string, Uint8Array> } {
+  let until = '';
+  for (const c of cals.values()) if (c.end > until) until = c.end;
+  for (const m of exc.values()) for (const [d, t] of m) if (t === 1 && d > until) until = d;
+  const end = parseYmd(until);
+  const weekStart = toIsoDate(addDays(end, -6)).replace(/-/g, '');
+  const out = new Map<string, Uint8Array>();
+  for (const id of ids) {
+    const week = gtfsServiceBits(weekStart, 7, cals.get(id), exc.get(id));
+    if (!week.some((b) => b !== 0)) continue;
+    // Jour de la semaine (lundi = 0) -> circule ?
+    const runs: boolean[] = [];
+    for (let i = 0; i < 7; i++) runs[(addDays(parseYmd(weekStart), i).getDay() + 6) % 7] = bitAt(week, i);
+    const bits = new Uint8Array(Math.ceil(days / 8));
+    for (let i = 0; i < days; i++) if (runs[(addDays(parseYmd(start), i).getDay() + 6) % 7]) setBit(bits, i);
+    out.set(id, bits);
+  }
+  return { until, services: out };
 }

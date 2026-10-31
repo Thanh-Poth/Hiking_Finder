@@ -155,6 +155,11 @@ export function buildTransit(m: Massif, feeds: NormalizedFeed[], originUics: Set
     }
   }
   const days = lastDay + 1;
+  const indicative: Record<string, string> = {};
+  for (const [, , feed] of agencies) {
+    const until = byFeed.get(feed)?.indicativeUntil;
+    if (until) indicative[feed] = until;
+  }
   const nBytes = Math.ceil(days / 8);
   const data: TransitData = {
     start,
@@ -166,6 +171,7 @@ export function buildTransit(m: Massif, feeds: NormalizedFeed[], originUics: Set
     trips: outTrips,
     footpaths,
     origins: [...stopIdx].filter(([k]) => origins.has(k)).map(([, i]) => i),
+    ...(Object.keys(indicative).length ? { indicative } : {}),
   };
   console.log(`${m.id} : ${stops.length} arrêts, ${outTrips.length} courses (T1 ${T1.length}, T2 ${T2.length}, T3 ${T3.length}), ${footpaths.length} correspondances, horizon ${days} j`);
   return { data, index: stopIdx };

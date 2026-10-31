@@ -71,7 +71,11 @@ des sources ouvertes :
 - **Accessibilité (40 %)** : arrêts de transport en commun à moins de 1,5 km du tracé et nombre
   moyen de départs par jour sur l'horizon des horaires publiés.
 - Les tracés qui recouvrent à plus de 50 % un itinéraire déjà retenu sont écartés ; seuls les
-  tracés d'au moins 15 km dans le massif sont gardés.
+  tracés d'au moins 15 km dans le massif et situés au moins à 60 % en France sont gardés.
+- Un itinéraire découpé en sections ou en étapes dans OSM (relation `superroute`, ex. GR 10) est
+  évalué en entier ; les variantes, liaisons et étapes isolées sont écartées, de même que les
+  itinéraires internationaux découpés en étapes (Via Alpina, Via Arverna…). Les chemins de
+  pèlerinage voient leur notoriété divisée par deux (souvent en plaine et sur route).
 
 ### Règles de bivouac
 
@@ -116,7 +120,12 @@ Les dates de mise à jour de chaque jeu de données sont affichées dans l'appli
 - **Horaires** : l'horizon publié varie selon les réseaux (environ 3 mois pour les TER). Les
   navettes estivales n'apparaissent que lorsque leurs horaires sont publiés : le score
   d'accessibilité dépend donc de la saison du build.
-- **Chemins de fer de la Corse** : le jeu GTFS publié a expiré en mars 2026.
+- **Jeux d'horaires expirés** (Chemins de fer de la Corse : une seule semaine de mars 2026 ;
+  navettes de Val d'Isère) : la dernière semaine publiée est répétée sur l'horizon et ces trajets
+  sont marqués « horaire indicatif », avec un avertissement invitant à vérifier sur le site du
+  transporteur.
+- **Corse** : la traversée (ferry, avion) n'est pas couverte ; choisir comme départ une gare de
+  l'île (Ajaccio et Bastia sont proches des ports, Calvi, Corte).
 - **Tracé libre** : segments en ligne droite entre les clics (pas de routage sur le réseau de
   sentiers) ; l'altitude vient de la grille 250 m.
 

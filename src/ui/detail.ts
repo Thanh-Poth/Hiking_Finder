@@ -27,7 +27,8 @@ function journeyHtml(j: Journey, t: TransitData): string {
     .map((l) => {
       if (l.type === 'walk') return `<div class="leg">🚶 ${l.minutes} min à pied : ${esc(t.stops[l.from][0])} → ${esc(t.stops[l.to][0])}</div>`;
       const [a, short] = t.routes[l.route];
-      return `<div class="leg">🚆 <b>${fmtTime(l.dep)}</b> ${esc(t.stops[l.from][0])} → <b>${fmtTime(l.arr)}</b> ${esc(t.stops[l.to][0])} <span class="hint">(${esc(t.agencies[a][0])} ${esc(short)})</span></div>`;
+      const tag = t.indicative?.[t.agencies[a][2]] ? '<span class="tag">horaire indicatif</span>' : '';
+      return `<div class="leg">🚆 <b>${fmtTime(l.dep)}</b> ${esc(t.stops[l.from][0])} → <b>${fmtTime(l.arr)}</b> ${esc(t.stops[l.to][0])} <span class="hint">(${esc(t.agencies[a][0])} ${esc(short)})</span>${tag}</div>`;
     })
     .join('');
 }

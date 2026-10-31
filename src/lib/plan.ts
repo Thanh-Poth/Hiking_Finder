@@ -185,5 +185,17 @@ export function computePlan(
     if (!params.car && transport?.chosenReturn) fix.push('rentrer le lendemain du dernier jour');
     warnings.unshift({ level: 'warn', text: `Il manque environ ${(need - have).toFixed(1).replace('.', ',')} h de marche par rapport au temps disponible (heures de jour, arrivée et dernier retour en transport). Ajustements possibles : ${fix.join(', ')}.` });
   }
+  // Horaires répétés depuis un jeu de données expiré : à vérifier auprès du transporteur.
+  const used = [transport?.outbound, transport?.chosenReturn].flatMap((j) => j?.legs ?? []);
+  const stale = new Map<string, string>();
+  for (const l of used) {
+    if (l.type !== 'ride' || !transit) continue;
+    const [name, , feed] = transit.agencies[transit.routes[l.route][0]];
+    const until = transit.indicative?.[feed];
+    if (until) stale.set(name, `${until.slice(6, 8)}/${until.slice(4, 6)}/${until.slice(0, 4)}`);
+  }
+  for (const [name, until] of stale) {
+    warnings.unshift({ level: 'warn', text: `Horaires ${name} indicatifs : les données ouvertes publiées s'arrêtent au ${until}, la dernière semaine connue est répétée. Vérifier les horaires réels sur le site du transporteur.` });
+  }
   return { dates, daylight, stages, water, waterOnRoute, usefulPois, transport, firstStartHour, lastDeadlineHour, cost: summarize(costLines, n), warnings, maxEle };
 }

@@ -49,6 +49,7 @@ export async function fetchCached(url: string, o: FetchOpts = {}): Promise<Buffe
       if (res.status === 429 || res.status >= 500) {
         const wait = Number(res.headers.get('retry-after')) * 1000 || 5000 * (attempt + 1);
         console.warn(`  ${res.status} sur ${url.slice(0, 80)}… nouvel essai dans ${wait / 1000}s`);
+        lastErr = new Error(`HTTP ${res.status} ${url}`);
         await sleep(wait);
         continue;
       }

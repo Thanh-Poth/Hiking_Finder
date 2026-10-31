@@ -30,7 +30,7 @@ const NETWORK_WEIGHT: Record<string, number> = { iwn: 1, nwn: 0.9, rwn: 0.6, lwn
 
 /** Chemins de pèlerinage : surtout en plaine et sur route, peu adaptés à l'itinérance en bivouac. */
 function isPilgrimage(tags: Record<string, string>): boolean {
-  return tags.pilgrimage === 'yes' || /compostelle|saint-jacques|st-jacques|francigena|via cluny|podiensis|gebennensis|camino|chemin de st|szombathely|sancti martini/i.test(`${tags.name ?? ''} ${tags.ref ?? ''}`);
+  return tags.pilgrimage === 'yes' || /compostelle|saint-jacques|st-jacques|francigena|via cluny|podiensis|gebennensis|arverna|jakobsweg|camino|chemin de st|szombathely|sancti martini/i.test(`${tags.name ?? ''} ${tags.ref ?? ''}`);
 }
 const PILGRIMAGE_FACTOR = 0.5;
 
@@ -79,6 +79,46 @@ function isVariant(tags: Record<string, string>): boolean {
   return /variante|liaison|raccourci|alternative|accès|acces|bretelle|proposed/.test(s) || /^gr ?\d+[a-z]$/i.test((tags.ref ?? '').trim()) && !tags.name;
 }
 
+/** Sentiers européens (E1…E12) : ils englobent les GR et ne décrivent pas un itinéraire à part. */
+const isEuropeanPath = (t: Record<string, string>) => /^E ?\d+$/i.test((t.ref ?? '').trim()) || /^E ?\d+(\s|$)|sentier européen|european long/i.test(t.name ?? '');
+
+/**
+ * Itinéraires découpés en sections ou en étapes (relation type=superroute, ex. GR 10, GR 72) :
+ * la relation parente remplace ses morceaux, pour classer l'itinéraire complet une seule fois.
+ * Son emprise est celle de ses morceaux trouvés dans le massif.
+ * Les itinéraires internationaux découpés (Via Alpina, Via Arverna…) traversent plusieurs massifs ou
+ * pays : ni le parent ni ses étapes ne sont retenus.
+ */
+function mergeSuperroutes(els: OsmElement[]): OsmElement[] {
+  const parents = els.filter((e) => e.members && e.tags?.type === 'superroute' && !isEuropeanPath(e.tags));
+  const routes = els.filter((e) => !e.members);
+  const byId = new Map(routes.map((r) => [r.id, r]));
+  const absorbed = new Set<number>();
+  const out: OsmElement[] = [];
+  for (const p of parents) {
+    const kids = p.members!.filter((mb) => mb.type === 'relation' && byId.get(mb.ref)?.bounds).map((mb) => byId.get(mb.ref)!);
+    if (!kids.length) continue;
+    for (const k of kids) absorbed.add(k.id);
+    if (p.tags?.network === 'iwn') continue;
+    const tags = { ...p.tags };
+    // Le parent hérite des liens Wikipédia de ses morceaux s'il n'en a pas.
+    for (const k of kids) for (const key of ['wikidata', 'wikipedia', 'network'] as const) if (!tags[key] && k.tags?.[key]) tags[key] = k.tags[key];
+    const bs = kids.map((k) => k.bounds!);
+    out.push({
+      type: 'relation',
+      id: p.id,
+      tags,
+      bounds: {
+        minlat: Math.min(...bs.map((b) => b.minlat)),
+        minlon: Math.min(...bs.map((b) => b.minlon)),
+        maxlat: Math.max(...bs.map((b) => b.maxlat)),
+        maxlon: Math.max(...bs.map((b) => b.maxlon)),
+      },
+    });
+  }
+  return [...routes.filter((r) => !absorbed.has(r.id)), ...out];
+}
+
 async function geometry(relId: number): Promise<OsmElement[]> {
   return overpass(`[out:json][timeout:180];rel(${relId});(._;rel(r););(._;rel(r););way(r);out geom;`);
 }
@@ -117,7 +157,8 @@ export async function buildMassifRoutes(m: Massif): Promise<void> {
   console.log(`\n== ${m.name}`);
   const bbox = padBBox(m.bbox, 2000);
   await loadFrance();
-  const rels = await overpass(`[out:json][timeout:180];rel["route"="hiking"](${obbox(m.bbox)});out tags bb;`);
+  const found = await overpass(`[out:json][timeout:180];rel["route"="hiking"](${obbox(m.bbox)})->.a;.a out tags bb;rel(br.a)["type"="superroute"]["route"="hiking"];out body;`);
+  const rels = mergeSuperroutes(found);
   const stopsFile = join(CACHE, `stops-${m.id}.json`);
   const stops: IndexedStop[] = existsSync(stopsFile) ? readJson(stopsFile) : [];
 
@@ -214,10 +255,12 @@ export async function buildMassifRoutes(m: Massif): Promise<void> {
     };
   }
   evaluated.sort((a, b) => b.score.total - a.score.total);
+  const wikidataOf = (e: RouteData) => short.find((c) => c.rel.id === e.osmRelation)?.rel.tags?.wikidata;
   const chosen: typeof evaluated = [];
   for (const e of evaluated) {
     if (chosen.length >= TOP) break;
-    if (chosen.some((c) => c.name === e.name)) continue;
+    // Même nom ou même élément Wikidata : morceaux ou variantes d'un même itinéraire.
+    if (chosen.some((c) => c.name === e.name || (wikidataOf(c) && wikidataOf(c) === wikidataOf(e)))) continue;
     if (chosen.some((c) => overlap(e.coords, c.coords) > 0.5 || overlap(c.coords, e.coords) > 0.5)) continue;
     chosen.push(e);
   }

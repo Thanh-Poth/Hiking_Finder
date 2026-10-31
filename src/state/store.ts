@@ -68,7 +68,8 @@ export function readHash(defaults: Params): Params {
   const h = new URLSearchParams(location.hash.replace(/^#/, ''));
   const p = { ...defaults };
   if (h.get('m')) p.massif = h.get('m')!;
-  if (h.has('d')) p.depart = h.get('d')!.replace(/\D/g, '').slice(0, 8);
+  // Code UIC SNCF (8 chiffres) ou identifiant de gare hors SNCF (ex. « cfc-ajaccio »).
+  if (h.has('d')) p.depart = h.get('d')!.replace(/[^a-z0-9-]/gi, '').slice(0, 32);
   p.car = h.get('car') === '1' ? true : h.has('car') ? false : p.car;
   const days = Number(h.get('j'));
   if (days >= 1 && days <= 10) p.days = Math.round(days);
